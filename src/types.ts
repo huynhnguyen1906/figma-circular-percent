@@ -2,6 +2,7 @@ export interface ChartData {
 	percentage: number;
 	size: number;
 	strokeWidth: number;
+	strokeCap: "square" | "round";
 	bgColor: string;
 	progressColor: string;
 	textColor: string;

@@ -243,6 +243,80 @@ export const uiHtml = `<!DOCTYPE html>
     .button.secondary:active {
       background: var(--figma-color-bg-pressed);
     }
+    
+    .stroke-cap-section {
+      margin-bottom: 18px;
+    }
+    
+    .stroke-cap-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    
+    .stroke-cap-option {
+      position: relative;
+      padding: 12px 16px;
+      border: 2px solid var(--figma-color-border);
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--figma-color-bg);
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    
+    .stroke-cap-option:hover {
+      background: var(--figma-color-bg-hover);
+      border-color: var(--figma-color-border-brand);
+    }
+    
+    .stroke-cap-option.selected {
+      border-color: var(--figma-color-border-brand);
+      background: var(--figma-color-bg-brand-secondary);
+    }
+    
+    .stroke-cap-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .stroke-cap-preview {
+      width: 60px;
+      height: 20px;
+      margin: 0 auto 8px;
+      border-radius: 4px;
+      background: #f0f0f0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stroke-cap-preview::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      right: 10px;
+      height: 8px;
+      background: var(--figma-color-border-brand);
+      transform: translateY(-50%);
+    }
+    
+    .stroke-cap-option.square .stroke-cap-preview::after {
+      border-radius: 0;
+    }
+    
+    .stroke-cap-option.round .stroke-cap-preview::after {
+      border-radius: 4px;
+    }
+    
+    .stroke-cap-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--figma-color-text);
+    }
   </style>
 </head>
 <body>
@@ -311,6 +385,23 @@ export const uiHtml = `<!DOCTYPE html>
       </div>
     </div>
     
+    <!-- Stroke Cap Section -->
+    <div class="stroke-cap-section">
+      <label>Stroke Style</label>
+      <div class="stroke-cap-options">
+        <div class="stroke-cap-option square selected" data-cap="square">
+          <input type="radio" name="stroke-cap" value="square" id="stroke-square" checked />
+          <div class="stroke-cap-preview"></div>
+          <div class="stroke-cap-label">Square</div>
+        </div>
+        <div class="stroke-cap-option round" data-cap="round">
+          <input type="radio" name="stroke-cap" value="round" id="stroke-round" />
+          <div class="stroke-cap-preview"></div>
+          <div class="stroke-cap-label">Round</div>
+        </div>
+      </div>
+    </div>
+    
     <div class="button-group">
       <button id="preview-button" class="button secondary">
         👁️ Preview
@@ -337,6 +428,8 @@ export const uiHtml = `<!DOCTYPE html>
     const progressColorHexInput = document.getElementById('progress-color-hex');
     const textColorInput = document.getElementById('text-color');
     const textColorHexInput = document.getElementById('text-color-hex');
+    const strokeCapOptions = document.querySelectorAll('.stroke-cap-option');
+    const strokeCapRadios = document.querySelectorAll('input[name="stroke-cap"]');
     
     // Helper function to validate hex color
     function isValidHex(hex) {
@@ -386,6 +479,24 @@ export const uiHtml = `<!DOCTYPE html>
     setupColorSync(progressColorInput, progressColorHexInput);
     setupColorSync(textColorInput, textColorHexInput);
     
+    // Handle stroke cap selection
+    strokeCapOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        // Remove selected class from all options
+        strokeCapOptions.forEach(opt => opt.classList.remove('selected'));
+        
+        // Add selected class to clicked option
+        option.classList.add('selected');
+        
+        // Update radio button
+        const radioValue = option.dataset.cap;
+        const radioButton = document.querySelector(\`input[name="stroke-cap"][value="\${radioValue}"]\`);
+        if (radioButton) {
+          radioButton.checked = true;
+        }
+      });
+    });
+    
     // Setup Figma-like keyboard shortcuts for number inputs
     function setupFigmaKeyboardShortcuts(input, min = 0, max = 500) {
       input.addEventListener('keydown', (e) => {
@@ -417,6 +528,7 @@ export const uiHtml = `<!DOCTYPE html>
       const percentage = parseInt(percentageInput.value) || 0;
       const size = parseInt(sizeInput.value) || 200;
       const strokeWidth = parseInt(strokeWidthInput.value) || 20;
+      const strokeCap = document.querySelector('input[name="stroke-cap"]:checked')?.value || 'square';
       const bgColor = bgColorInput.value;
       const progressColor = progressColorInput.value;
       const textColor = textColorInput.value;
@@ -437,33 +549,79 @@ export const uiHtml = `<!DOCTYPE html>
       const previewStrokeWidth = Math.max(2, strokeWidth * sizeRatio);
       
       const center = previewSize / 2;
-      const outerRadius = previewSize / 2;
-      const innerRadius = outerRadius - previewStrokeWidth;
       
-      let progressPath = '';
-      if (percentage > 0) {
-        const progressAngle = (percentage / 100) * 2 * Math.PI;
-        const endX = center + outerRadius * Math.sin(progressAngle);
-        const endY = center - outerRadius * Math.cos(progressAngle);
-        const innerEndX = center + innerRadius * Math.sin(progressAngle);
-        const innerEndY = center - innerRadius * Math.cos(progressAngle);
-        const largeArcFlag = percentage > 50 ? 1 : 0;
+      // Generate SVG based on stroke cap type
+      let svgContent = '';
+      
+      if (strokeCap === 'round') {
+        // Use path-based approach with stroke for round caps
+        const radius = (previewSize - previewStrokeWidth) / 2;
         
-        progressPath = \`
-          <path d="M \${center},\${center - outerRadius} A \${outerRadius},\${outerRadius} 0 \${largeArcFlag},1 \${endX},\${endY} L \${innerEndX},\${innerEndY} A \${innerRadius},\${innerRadius} 0 \${largeArcFlag},0 \${center},\${center - innerRadius} Z" fill="\${progressColor}"/>
+        let progressPath = '';
+        if (percentage > 0) {
+          const progressAngle = (percentage / 100) * 2 * Math.PI;
+          const endX = center + radius * Math.sin(progressAngle);
+          const endY = center - radius * Math.cos(progressAngle);
+          const largeArcFlag = percentage > 50 ? 1 : 0;
+          
+          progressPath = \`
+            <path 
+              d="M \${center},\${center - radius} A \${radius},\${radius} 0 \${largeArcFlag},1 \${endX},\${endY}" 
+              fill="none" 
+              stroke="\${progressColor}" 
+              stroke-width="\${previewStrokeWidth}"
+              stroke-linecap="round"
+            />
+          \`;
+        }
+        
+        svgContent = \`
+          <svg width="\${previewSize}" height="\${previewSize}" viewBox="0 0 \${previewSize} \${previewSize}">
+            <!-- Background Circle -->
+            <circle 
+              cx="\${center}" 
+              cy="\${center}" 
+              r="\${radius}" 
+              fill="none" 
+              stroke="\${bgColor}" 
+              stroke-width="\${previewStrokeWidth}"
+            />
+            <!-- Progress Arc -->
+            \${progressPath}
+            <!-- Text -->
+            <text x="\${center}" y="\${center + 1}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
+          </svg>
+        \`;
+      } else {
+        // Use path-based approach for square caps (existing logic)
+        const outerRadius = previewSize / 2;
+        const innerRadius = outerRadius - previewStrokeWidth;
+        
+        let progressPath = '';
+        if (percentage > 0) {
+          const progressAngle = (percentage / 100) * 2 * Math.PI;
+          const endX = center + outerRadius * Math.sin(progressAngle);
+          const endY = center - outerRadius * Math.cos(progressAngle);
+          const innerEndX = center + innerRadius * Math.sin(progressAngle);
+          const innerEndY = center - innerRadius * Math.cos(progressAngle);
+          const largeArcFlag = percentage > 50 ? 1 : 0;
+          
+          progressPath = \`
+            <path d="M \${center},\${center - outerRadius} A \${outerRadius},\${outerRadius} 0 \${largeArcFlag},1 \${endX},\${endY} L \${innerEndX},\${innerEndY} A \${innerRadius},\${innerRadius} 0 \${largeArcFlag},0 \${center},\${center - innerRadius} Z" fill="\${progressColor}"/>
+          \`;
+        }
+        
+        svgContent = \`
+          <svg width="\${previewSize}" height="\${previewSize}" viewBox="0 0 \${previewSize} \${previewSize}">
+            <!-- Background Ring -->
+            <path d="M \${center},\${center - outerRadius} A \${outerRadius},\${outerRadius} 0 1,1 \${center - 0.001},\${center - outerRadius} L \${center - 0.001},\${center - innerRadius} A \${innerRadius},\${innerRadius} 0 1,0 \${center},\${center - innerRadius} Z" fill="\${bgColor}"/>
+            <!-- Progress Ring -->
+            \${progressPath}
+            <!-- Text -->
+            <text x="\${center}" y="\${center + 1}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
+          </svg>
         \`;
       }
-      
-      const svgContent = \`
-        <svg width="\${previewSize}" height="\${previewSize}" viewBox="0 0 \${previewSize} \${previewSize}">
-          <!-- Background Ring -->
-          <path d="M \${center},\${center - outerRadius} A \${outerRadius},\${outerRadius} 0 1,1 \${center - 0.001},\${center - outerRadius} L \${center - 0.001},\${center - innerRadius} A \${innerRadius},\${innerRadius} 0 1,0 \${center},\${center - innerRadius} Z" fill="\${bgColor}"/>
-          <!-- Progress Ring -->
-          \${progressPath}
-          <!-- Text -->
-          <text x="\${center}" y="\${center + 1}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
-        </svg>
-      \`;
       
       previewContainer.innerHTML = \`<div class="preview-chart">\${svgContent}</div>\`;
       showStatus('👁️ Preview updated!', 'success');
@@ -490,6 +648,7 @@ export const uiHtml = `<!DOCTYPE html>
       const percentage = parseInt(percentageInput.value) || 0;
       const size = parseInt(sizeInput.value) || 200;
       const strokeWidth = parseInt(strokeWidthInput.value) || 20;
+      const strokeCap = document.querySelector('input[name="stroke-cap"]:checked')?.value || 'square';
       const bgColor = bgColorInput.value;
       const progressColor = progressColorInput.value;
       const textColor = textColorInput.value;
@@ -510,6 +669,7 @@ export const uiHtml = `<!DOCTYPE html>
             percentage,
             size,
             strokeWidth,
+            strokeCap,
             bgColor,
             progressColor,
             textColor

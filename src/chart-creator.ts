@@ -3,7 +3,7 @@ import { tryLoadFont, hexToRgb } from "./utils";
 
 export async function createCircularChart(data: ChartData): Promise<void> {
 	try {
-		const { percentage, size, strokeWidth, bgColor, progressColor, textColor } = data;
+		const { percentage, size, strokeWidth, strokeCap, bgColor, progressColor, textColor } = data;
 
 		// Create main frame to contain the chart
 		const frame = figma.createFrame();
@@ -13,52 +13,100 @@ export async function createCircularChart(data: ChartData): Promise<void> {
 
 		// Calculate circle properties
 		const center = size / 2;
-		const outerRadius = size / 2;
-		const innerRadius = outerRadius - strokeWidth;
 
-		// Create background ring using SVG
-		const bgSvg = `
-      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <path d="M ${center},${center - outerRadius} A ${outerRadius},${outerRadius} 0 1,1 ${center - 0.001},${
-			center - outerRadius
-		} L ${center - 0.001},${center - innerRadius} A ${innerRadius},${innerRadius} 0 1,0 ${center},${
-			center - innerRadius
-		} Z" fill="${bgColor}"/>
-      </svg>
-    `;
-
-		const bgRing = figma.createNodeFromSvg(bgSvg);
-		bgRing.name = "Background Ring";
-
-		// Create progress ring using SVG if percentage > 0
+		let bgRing: SceneNode;
 		let progressRing: SceneNode | null = null;
 
-		if (percentage > 0) {
-			// Calculate progress angle (starting from top, clockwise)
-			const progressAngle = (percentage / 100) * 2 * Math.PI;
+		if (strokeCap === "round") {
+			// Use stroke-based approach for round caps
+			const radius = (size - strokeWidth) / 2;
 
-			// Calculate end position for progress arc
-			const endX = center + outerRadius * Math.sin(progressAngle);
-			const endY = center - outerRadius * Math.cos(progressAngle);
-			const innerEndX = center + innerRadius * Math.sin(progressAngle);
-			const innerEndY = center - innerRadius * Math.cos(progressAngle);
+			// Create background circle with stroke
+			const bgSvg = `
+				<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+					<circle 
+						cx="${center}" 
+						cy="${center}" 
+						r="${radius}" 
+						fill="none" 
+						stroke="${bgColor}" 
+						stroke-width="${strokeWidth}"
+					/>
+				</svg>
+			`;
 
-			// Use large arc flag if progress > 50%
-			const largeArcFlag = percentage > 50 ? 1 : 0;
+			bgRing = figma.createNodeFromSvg(bgSvg);
+			bgRing.name = "Background Ring";
 
-			// Create progress arc SVG
-			const progressSvg = `
-        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-          <path d="M ${center},${
+			// Create progress arc if percentage > 0
+			if (percentage > 0) {
+				const progressAngle = (percentage / 100) * 2 * Math.PI;
+				const endX = center + radius * Math.sin(progressAngle);
+				const endY = center - radius * Math.cos(progressAngle);
+				const largeArcFlag = percentage > 50 ? 1 : 0;
+
+				const progressSvg = `
+					<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+						<path 
+							d="M ${center},${center - radius} A ${radius},${radius} 0 ${largeArcFlag},1 ${endX},${endY}" 
+							fill="none" 
+							stroke="${progressColor}" 
+							stroke-width="${strokeWidth}"
+							stroke-linecap="round"
+						/>
+					</svg>
+				`;
+
+				progressRing = figma.createNodeFromSvg(progressSvg);
+				progressRing.name = "Progress Ring";
+			}
+		} else {
+			// Use path-based approach for square caps (existing logic)
+			const outerRadius = size / 2;
+			const innerRadius = outerRadius - strokeWidth;
+
+			// Create background ring using SVG
+			const bgSvg = `
+				<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+					<path d="M ${center},${center - outerRadius} A ${outerRadius},${outerRadius} 0 1,1 ${center - 0.001},${
 				center - outerRadius
-			} A ${outerRadius},${outerRadius} 0 ${largeArcFlag},1 ${endX},${endY} L ${innerEndX},${innerEndY} A ${innerRadius},${innerRadius} 0 ${largeArcFlag},0 ${center},${
+			} L ${center - 0.001},${center - innerRadius} A ${innerRadius},${innerRadius} 0 1,0 ${center},${
 				center - innerRadius
-			} Z" fill="${progressColor}"/>
-        </svg>
-      `;
+			} Z" fill="${bgColor}"/>
+				</svg>
+			`;
 
-			progressRing = figma.createNodeFromSvg(progressSvg);
-			progressRing.name = "Progress Ring";
+			bgRing = figma.createNodeFromSvg(bgSvg);
+			bgRing.name = "Background Ring";
+
+			// Create progress ring using SVG if percentage > 0
+			if (percentage > 0) {
+				// Calculate progress angle (starting from top, clockwise)
+				const progressAngle = (percentage / 100) * 2 * Math.PI;
+
+				// Calculate end position for progress arc
+				const endX = center + outerRadius * Math.sin(progressAngle);
+				const endY = center - outerRadius * Math.cos(progressAngle);
+				const innerEndX = center + innerRadius * Math.sin(progressAngle);
+				const innerEndY = center - innerRadius * Math.cos(progressAngle);
+
+				// Use large arc flag if progress > 50%
+				const largeArcFlag = percentage > 50 ? 1 : 0;
+
+				// Create progress arc SVG
+				const progressSvg = `
+					<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+						<path d="M ${center},${
+					center - outerRadius
+				} A ${outerRadius},${outerRadius} 0 ${largeArcFlag},1 ${endX},${endY} L ${innerEndX},${innerEndY} A ${innerRadius},${innerRadius} 0 ${largeArcFlag},0 ${center},${
+					center - innerRadius
+				} Z" fill="${progressColor}"/>
+					</svg>
+				`;
+
+				progressRing = figma.createNodeFromSvg(progressSvg);
+				progressRing.name = "Progress Ring";
+			}
 		}
 
 		// Add rings to frame
