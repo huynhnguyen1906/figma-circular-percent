@@ -18,6 +18,8 @@ export const uiHtml = `<!DOCTYPE html>
       background: var(--figma-color-bg);
       color: var(--figma-color-text);
       min-height: 100vh;
+      display: flex;
+      justify-content: center;
     }
     
     .container {
