@@ -386,6 +386,32 @@ export const uiHtml = `<!DOCTYPE html>
     setupColorSync(progressColorInput, progressColorHexInput);
     setupColorSync(textColorInput, textColorHexInput);
     
+    // Setup Figma-like keyboard shortcuts for number inputs
+    function setupFigmaKeyboardShortcuts(input, min = 0, max = 500) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          // Only handle Shift + Arrow, let default behavior handle normal Arrow keys
+          if (e.shiftKey) {
+            e.preventDefault();
+            
+            const currentValue = parseInt(input.value) || 0;
+            const increment = e.key === 'ArrowUp' ? 10 : -10;
+            const newValue = Math.max(min, Math.min(max, currentValue + increment));
+            
+            input.value = newValue;
+            
+            // Trigger input event to update any listeners (like preview)
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+      });
+    }
+    
+    // Apply keyboard shortcuts to all number inputs
+    setupFigmaKeyboardShortcuts(percentageInput, 0, 100);
+    setupFigmaKeyboardShortcuts(sizeInput, 50, 500);
+    setupFigmaKeyboardShortcuts(strokeWidthInput, 5, 50);
+    
     // Function to generate SVG preview
     function generatePreview() {
       const percentage = parseInt(percentageInput.value) || 0;
@@ -435,7 +461,7 @@ export const uiHtml = `<!DOCTYPE html>
           <!-- Progress Ring -->
           \${progressPath}
           <!-- Text -->
-          <text x="\${center}" y="\${center + 4}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
+          <text x="\${center}" y="\${center}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
         </svg>
       \`;
       
