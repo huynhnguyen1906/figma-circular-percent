@@ -1,23 +1,79 @@
-# Hello World
+# 📊 Circular Percent Chart - Figma Plugin
 
-## Development guide
+A powerful and intuitive Figma plugin for creating beautiful circular percentage charts with customizable colors, sizes, and real-time preview.
 
-*This plugin is built with [Create Figma Plugin](https://yuanqing.github.io/create-figma-plugin/).*
+![Plugin Preview](./preview.png)
 
-### Pre-requisites
+## ✨ Features
 
-- [Node.js](https://nodejs.org) – v20
-- [Figma desktop app](https://figma.com/downloads/)
+### 🎨 **Visual Customization**
 
-### Build the plugin
+- **Adjustable Percentage**: Set any value from 0% to 100%
+- **Custom Colors**: Choose background, progress, and text colors
+- **Hex Color Input**: Enter colors using hex codes (#RRGGBB)
+- **Size Control**: Chart sizes from 50px and up (no upper limit)
+- **Stroke Width**: Customize ring thickness (up to 2/3 of chart radius, rounded)
 
-To build the plugin:
+### 👁️ **Real-Time Preview**
+
+- **Live Preview**: See your chart before creating it
+- **Accurate Scaling**: Preview respects actual size ratios
+- **Instant Updates**: Changes reflect immediately
+
+### ⌨️ **Figma-like Shortcuts**
+
+- **Arrow Keys**: Increment/decrement by 1
+- **Shift + Arrow Keys**: Increment/decrement by 10
+- **Professional Workflow**: Familiar keyboard shortcuts
+
+### 🎯 **Smart Features**
+
+- **No Spinners**: Clean number inputs without scroll arrows
+- **Color Sync**: Color picker and hex input stay synchronized
+- **Input Validation**: Automatic bounds checking
+- **Modern UI**: Beautiful, responsive interface
+
+## 🚀 Installation
+
+1. **Download** the plugin files
+2. **Open Figma Desktop**
+3. Go to **Plugins** → **Development** → **Import plugin from manifest**
+4. Select the `manifest.json` file
+5. **Run** the plugin from Plugins menu
+
+## 📖 How to Use
+
+### Basic Workflow
+
+1. **Open** the plugin in Figma
+2. **Set Percentage** (0-100%)
+3. **Customize** size and stroke width
+4. **Choose Colors** using color pickers or hex codes
+5. **Preview** your chart (optional)
+6. **Create Chart** to add to canvas
+
+### Keyboard Shortcuts
+
+- **↑/↓ Arrow Keys**: Change values by 1
+- **Shift + ↑/↓**: Change values by 10
+- **Tab**: Navigate between inputs
+
+### Color Input Methods
+
+- **Color Picker**: Click the color square to open picker
+- **Hex Codes**: Type directly (e.g., `#8B5CF6`, `#FF0000`)
+- **Auto-Sync**: Both methods stay synchronized
+
+## 🎨 Default Values
 
 ```
-$ npm run build
+Percentage: 55%
+Size: 200px
+Stroke Width: 20px
+Background Color: #E5E7EB (Light Gray)
+Progress Color: #8B5CF6 (Purple)
+Text Color: #222222 (Dark Gray)
 ```
-
-This will generate a [`manifest.json`](https://figma.com/plugin-docs/manifest/) file and a `build/` directory containing the JavaScript bundle(s) for the plugin.
 
 To watch for code changes and rebuild the plugin automatically:
 
@@ -37,12 +93,120 @@ Use `console.log` statements to inspect values in your code.
 
 To open the developer console, search for and run `Show/Hide Console` via the Quick Actions search bar.
 
-## See also
+## 🛠️ Technical Details
 
-- [Create Figma Plugin docs](https://yuanqing.github.io/create-figma-plugin/)
-- [`yuanqing/figma-plugins`](https://github.com/yuanqing/figma-plugins#readme)
+### Built With
 
-Official docs and code samples from Figma:
+- **TypeScript**: Type-safe development
+- **Figma Plugin API**: Native Figma integration
+- **SVG Graphics**: Crisp, scalable charts
+- **Modern CSS**: Responsive, accessible UI
 
-- [Plugin API docs](https://figma.com/plugin-docs/)
-- [`figma/plugin-samples`](https://github.com/figma/plugin-samples#readme)
+### File Structure
+
+```
+├── src/
+│   ├── main.ts          # Plugin entry point
+│   ├── ui.ts            # User interface
+│   ├── chart-creator.ts # Chart generation logic
+│   ├── types.ts         # TypeScript definitions
+│   └── utils.ts         # Helper functions
+├── build/
+│   └── main.js          # Compiled output
+├── manifest.json        # Plugin configuration
+└── README.md           # Documentation
+```
+
+## 🎯 Use Cases
+
+### Design Projects
+
+- **Dashboards**: Data visualization components
+- **Infographics**: Statistical representations
+- **Progress Indicators**: Loading states, completion rates
+- **KPI Cards**: Key performance metrics
+
+### Business Applications
+
+- **Analytics**: Performance metrics
+- **Reports**: Visual data summaries
+- **Presentations**: Engaging statistics
+- **Marketing**: Progress visualization
+
+## 🔧 Development
+
+### Prerequisites
+
+- **Node.js** 16+
+- **npm** or **yarn**
+- **Figma Desktop** app
+
+### Setup
+
+```bash
+# Clone repository
+git clone <repository-url>
+
+# Install dependencies
+npm install
+
+# Build plugin
+npm run build
+
+# Watch for changes (development)
+npm run watch
+```
+
+### Build Commands
+
+```bash
+npm run build    # Production build
+npm run watch    # Development watch mode
+npm run clean    # Clean build directory
+```
+
+## 📝 Changelog
+
+### Version 1.0.0
+
+- ✅ Initial release
+- ✅ Circular percentage charts
+- ✅ Color customization
+- ✅ Real-time preview
+- ✅ Keyboard shortcuts
+- ✅ Hex color input
+- ✅ Responsive UI
+
+## 🤝 Contributing
+
+1. **Fork** the repository
+2. **Create** feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to branch (`git push origin feature/amazing-feature`)
+5. **Open** Pull Request
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Figma Team**: For the amazing plugin API
+- **Community**: For feedback and suggestions
+- **Contributors**: Thank you for your contributions
+
+## 📧 Support
+
+- **Issues**: [Report bugs](../../issues)
+- **Discussions**: [Join conversations](../../discussions)
+- **Documentation**: [Plugin guides](https://figma.com/plugin-docs/)
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the Figma community**
+
+[⭐ Star this repo](../../stargazers) • [🐛 Report bug](../../issues) • [💡 Request feature](../../issues)
+
+</div>

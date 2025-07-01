@@ -461,7 +461,7 @@ export const uiHtml = `<!DOCTYPE html>
           <!-- Progress Ring -->
           \${progressPath}
           <!-- Text -->
-          <text x="\${center}" y="\${center}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
+          <text x="\${center}" y="\${center + 1}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
         </svg>
       \`;
       
