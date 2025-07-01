@@ -21,7 +21,7 @@ export const uiHtml = `<!DOCTYPE html>
     }
     
     .container {
-      max-width: 300px;
+      max-width: 380px;
       width: 100%;
     }
     
@@ -33,7 +33,7 @@ export const uiHtml = `<!DOCTYPE html>
     }
     
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     
     label {
@@ -103,14 +103,14 @@ export const uiHtml = `<!DOCTYPE html>
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     
     .color-group {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     
     .color-input {
@@ -190,11 +190,74 @@ export const uiHtml = `<!DOCTYPE html>
       background: var(--figma-color-bg-danger);
       color: var(--figma-color-text-ondanger);
     }
+    
+    .preview-section {
+      margin-bottom: 18px;
+    }
+    
+    .preview-container {
+      width: 100%;
+      height: 200px;
+      border: 2px dashed var(--figma-color-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1f1f1;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .preview-placeholder {
+      color: var(--figma-color-text-secondary);
+      font-size: 14px;
+      text-align: center;
+    }
+    
+    .preview-chart {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    
+    .button.secondary {
+      background: var(--figma-color-bg-secondary);
+      color: var(--figma-color-text);
+      border: 1px solid var(--figma-color-border);
+    }
+    
+    .button.secondary:hover {
+      background: var(--figma-color-bg-hover);
+    }
+    
+    .button.secondary:active {
+      background: var(--figma-color-bg-pressed);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>📊 Circular Percent Chart</h1>
+    
+    <!-- Preview Area -->
+    <div class="preview-section">
+      <label>Preview</label>
+      <div class="preview-container" id="preview-container">
+        <div class="preview-placeholder">
+          <span>👁️ Click Preview to see your chart</span>
+        </div>
+      </div>
+    </div>
     
     <div class="form-group">
       <label for="percentage">Percentage</label>
@@ -248,16 +311,23 @@ export const uiHtml = `<!DOCTYPE html>
       </div>
     </div>
     
-    <button id="create-button" class="button">
-      Create Chart
-    </button>
+    <div class="button-group">
+      <button id="preview-button" class="button secondary">
+        👁️ Preview
+      </button>
+      <button id="create-button" class="button">
+        Create Chart
+      </button>
+    </div>
     
     <div id="status" class="status"></div>
   </div>
 
   <script>
     const createButton = document.getElementById('create-button');
+    const previewButton = document.getElementById('preview-button');
     const statusDiv = document.getElementById('status');
+    const previewContainer = document.getElementById('preview-container');
     const percentageInput = document.getElementById('percentage');
     const sizeInput = document.getElementById('size');
     const strokeWidthInput = document.getElementById('stroke-width');
@@ -316,6 +386,57 @@ export const uiHtml = `<!DOCTYPE html>
     setupColorSync(progressColorInput, progressColorHexInput);
     setupColorSync(textColorInput, textColorHexInput);
     
+    // Function to generate SVG preview
+    function generatePreview() {
+      const percentage = parseInt(percentageInput.value) || 0;
+      const bgColor = bgColorInput.value;
+      const progressColor = progressColorInput.value;
+      const textColor = textColorInput.value;
+      
+      if (percentage < 0 || percentage > 100) {
+        showStatus('❌ Percentage must be between 0 and 100', 'error');
+        return;
+      }
+      
+      // Clear previous preview first
+      previewContainer.innerHTML = '';
+      
+      // Preview size (smaller than actual)
+      const previewSize = 160;
+      const strokeWidth = 16;
+      const center = previewSize / 2;
+      const outerRadius = previewSize / 2;
+      const innerRadius = outerRadius - strokeWidth;
+      
+      let progressPath = '';
+      if (percentage > 0) {
+        const progressAngle = (percentage / 100) * 2 * Math.PI;
+        const endX = center + outerRadius * Math.sin(progressAngle);
+        const endY = center - outerRadius * Math.cos(progressAngle);
+        const innerEndX = center + innerRadius * Math.sin(progressAngle);
+        const innerEndY = center - innerRadius * Math.cos(progressAngle);
+        const largeArcFlag = percentage > 50 ? 1 : 0;
+        
+        progressPath = \`
+          <path d="M \${center},\${center - outerRadius} A \${outerRadius},\${outerRadius} 0 \${largeArcFlag},1 \${endX},\${endY} L \${innerEndX},\${innerEndY} A \${innerRadius},\${innerRadius} 0 \${largeArcFlag},0 \${center},\${center - innerRadius} Z" fill="\${progressColor}"/>
+        \`;
+      }
+      
+      const svgContent = \`
+        <svg width="\${previewSize}" height="\${previewSize}" viewBox="0 0 \${previewSize} \${previewSize}">
+          <!-- Background Ring -->
+          <path d="M \${center},\${center - outerRadius} A \${outerRadius},\${outerRadius} 0 1,1 \${center - 0.001},\${center - outerRadius} L \${center - 0.001},\${center - innerRadius} A \${innerRadius},\${innerRadius} 0 1,0 \${center},\${center - innerRadius} Z" fill="\${bgColor}"/>
+          <!-- Progress Ring -->
+          \${progressPath}
+          <!-- Text -->
+          <text x="\${center}" y="\${center + 4}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="\${Math.max(14, previewSize * 0.12)}" font-weight="bold" fill="\${textColor}">\${percentage}%</text>
+        </svg>
+      \`;
+      
+      previewContainer.innerHTML = \`<div class="preview-chart">\${svgContent}</div>\`;
+      showStatus('👁️ Preview updated!', 'success');
+    }
+    
     function showStatus(message, type = 'success') {
       statusDiv.textContent = message;
       statusDiv.className = \`status \${type}\`;
@@ -326,6 +447,11 @@ export const uiHtml = `<!DOCTYPE html>
         statusDiv.className = 'status';
       }, 3000);
     }
+    
+    // Handle preview button click
+    previewButton.addEventListener('click', () => {
+      generatePreview();
+    });
     
     // Handle create button click
     createButton.addEventListener('click', () => {
