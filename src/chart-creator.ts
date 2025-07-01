@@ -86,9 +86,8 @@ export async function createCircularChart(data: ChartData): Promise<void> {
 		text.textAlignHorizontal = "CENTER";
 		text.textAlignVertical = "CENTER";
 
-		// Center the text
 		text.x = center - text.width / 2;
-		text.y = center - text.height / 2;
+		text.y = center - text.height / 2 + 1;
 
 		// Add text to frame
 		frame.appendChild(text);
