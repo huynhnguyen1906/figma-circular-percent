@@ -240,10 +240,10 @@ export const uiHtml = `<!DOCTYPE html>
         <label>Text Color</label>
         <div class="color-input">
           <div class="color-picker-row">
-            <input type="color" id="text-color" value="#000000" />
+            <input type="color" id="text-color" value="#222222" />
             <span class="color-label">Text</span>
           </div>
-          <input type="text" id="text-color-hex" class="color-hex-input" value="#000000" placeholder="#RRGGBB" maxlength="7" />
+          <input type="text" id="text-color-hex" class="color-hex-input" value="#222222" placeholder="#RRGGBB" maxlength="7" />
         </div>
       </div>
     </div>
