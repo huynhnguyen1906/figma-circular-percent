@@ -559,14 +559,28 @@ export const uiHtml = `<!DOCTYPE html>
         
         let progressPath = '';
         if (percentage > 0) {
-          const progressAngle = (percentage / 100) * 2 * Math.PI;
-          const endX = center + radius * Math.sin(progressAngle);
-          const endY = center - radius * Math.cos(progressAngle);
-          const largeArcFlag = percentage > 50 ? 1 : 0;
+          // Calculate circumference and adjust for rounded caps
+          const circumference = 2 * Math.PI * radius;
+          const capAdjustment = (previewStrokeWidth / 2) / radius; // Angle adjustment for each cap
+          
+          // Adjust start angle to account for the rounded start cap
+          const startAngle = capAdjustment;
+          
+          // Adjust end angle: reduce by cap adjustment to account for rounded end cap
+          const targetAngle = (percentage / 100) * 2 * Math.PI;
+          const endAngle = targetAngle - capAdjustment;
+          
+          const actualAngle = Math.max(0, endAngle - startAngle);
+          
+          const startX = center + radius * Math.sin(startAngle);
+          const startY = center - radius * Math.cos(startAngle);
+          const endX = center + radius * Math.sin(startAngle + actualAngle);
+          const endY = center - radius * Math.cos(startAngle + actualAngle);
+          const largeArcFlag = actualAngle > Math.PI ? 1 : 0;
           
           progressPath = \`
             <path 
-              d="M \${center},\${center - radius} A \${radius},\${radius} 0 \${largeArcFlag},1 \${endX},\${endY}" 
+              d="M \${startX},\${startY} A \${radius},\${radius} 0 \${largeArcFlag},1 \${endX},\${endY}" 
               fill="none" 
               stroke="\${progressColor}" 
               stroke-width="\${previewStrokeWidth}"
