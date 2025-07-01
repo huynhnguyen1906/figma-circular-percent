@@ -6,7 +6,7 @@ export default function () {
 	// Show the plugin UI using the imported HTML content
 	figma.showUI(uiHtml, {
 		width: 420,
-		height: 580,
+		height: 750,
 		themeColors: true,
 	});
 

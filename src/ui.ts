@@ -389,6 +389,8 @@ export const uiHtml = `<!DOCTYPE html>
     // Function to generate SVG preview
     function generatePreview() {
       const percentage = parseInt(percentageInput.value) || 0;
+      const size = parseInt(sizeInput.value) || 200;
+      const strokeWidth = parseInt(strokeWidthInput.value) || 20;
       const bgColor = bgColorInput.value;
       const progressColor = progressColorInput.value;
       const textColor = textColorInput.value;
@@ -401,12 +403,16 @@ export const uiHtml = `<!DOCTYPE html>
       // Clear previous preview first
       previewContainer.innerHTML = '';
       
-      // Preview size (smaller than actual)
+      // Preview size (fixed)
       const previewSize = 160;
-      const strokeWidth = 16;
+      
+      // Calculate stroke width ratio based on actual size vs preview size
+      const sizeRatio = previewSize / size;
+      const previewStrokeWidth = Math.max(2, strokeWidth * sizeRatio);
+      
       const center = previewSize / 2;
       const outerRadius = previewSize / 2;
-      const innerRadius = outerRadius - strokeWidth;
+      const innerRadius = outerRadius - previewStrokeWidth;
       
       let progressPath = '';
       if (percentage > 0) {
